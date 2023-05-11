@@ -1,95 +1,52 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+'use client'
+import React, { useState } from 'react'
+import { DndProvider } from 'react-dnd'
+import { HTML5Backend } from 'react-dnd-html5-backend'
+import { TouchBackend } from 'react-dnd-touch-backend'
+import EmojiBar from '../components/EmojiBar'
+import Board from '../components/Board'
+import {tiles, transportation} from './emojis'
 
-export default function Home() {
+const isTouchDevice = () => {
+  return 'ontouchstart' in window || navigator.maxTouchPoints > 0
+}
+
+// const randomEmoji = () => {
+//   const emojis = ['🌳', '🌳', '🌳', '🪨', '🏜️', '']
+//   return emojis[Math.floor(Math.random() * emojis.length)]
+// }
+
+const App = () => {
+  const [cells, setCells] = useState(Array.from({ length: 32 }, () => Array.from({ length: 32 }, () => '')))
+
+  const handleDrop = (item, x, y) => {
+    console.log(item, x, y)
+    const newCells = [...cells]
+    newCells[x][y] = item.emoji
+    setCells(newCells)
+  }
+
+  const emojisPrices = new Map();
+  tiles.forEach(tile => {
+    if (emojisPrices.has(tile.price)) {
+      emojisPrices.get(tile.price).push(tile)
+    } else {
+      emojisPrices.set(tile.price, [tile])
+    }
+  })
+
+  // const emojisPrices = {
+  //   20: ['🌳', '🏠', '🏢'],
+  //   40: ['🏥', '🚗', '🚦'],
+  //   100: ['🛤️']
+  // }
+  console.log('cells', cells)
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://beta.nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    <DndProvider backend={isTouchDevice() ? TouchBackend : HTML5Backend}>
+      <EmojiBar emojisPrices={emojisPrices} />
+      <Board cells={cells} onDrop={handleDrop} />
+    </DndProvider>
   )
 }
+
+export default App
